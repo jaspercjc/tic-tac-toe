@@ -17,15 +17,15 @@ class GameController extends Controller
     public function start()
     {
         $game['board'] = array(
-            array('X', '-', '-', '-'),
-            array('-', 'X', '-', '-'),
-            array('-', '-', 'X', '-'),
-            array('-', '-', '-', 'X')
+            array('-', '-', '-', '-'),
+            array('-', '-', '-', '-'),
+            array('-', '-', '-', '-'),
+            array('-', '-', '-', '-')
         );
 
-        $game['player'] = 'x';
-        $game['over'] = false;
-        $game['winner'] = null;
+        $game['player'] = 'X';
+        $game['result'] = null;
+        $game['error'] = null;
 
         session(['game' => $game]);
 
@@ -34,73 +34,90 @@ class GameController extends Controller
 
     public function move(Request $request)
     {
+        $game = session('game');
+
         $row = $request->input('row');
         $col = $request->input('col');
-        $player = $request->input('player');
+        $player = $game['player'];
+
+        // Reset error message
+        $game['error'] = null;
 
         // Check if the move is valid
-        if ($this->board[$row][$col] == '-') {
+        if ($game['board'][$row][$col] == '-') {
             // Update the board with the player's move
-            $this->board[$row][$col] = $player;
+            $game['board'][$row][$col] = $player;
 
             // Check if the game has ended
-            if ($this->checkWin($player)) {
+            if ($this->checkWin($player, $game['board'])) {
                 // Player has won
-                return view('result', ['result' => $player . ' wins!']);
-            } else if ($this->checkTie()) {
+                $game['result'] = 'Player ' . $player . ' wins!';
+            } else if ($this->checkTie($game['board'])) {
                 // Game has ended in a tie
-                return view('result', ['result' => 'Tie game.']);
+                $game['result'] = 'Tie game.';
             } else {
                 // Game continues, render the game view with the updated board
-                return view('game', ['board' => $this->board]);
+                $game['player'] = $player == 'X' ? 'O' : 'X';
             }
         } else {
             // Invalid move, render the game view with an error message
-            return view('game', ['board' => $this->board, 'error' => 'Invalid move.']);
+            $game['error'] = 'Invalid move.';
         }
+        session(['game' => $game]);
+        return redirect()->back();
     }
 
-    private function checkWin($player)
+    public function surrender()
+    {
+        $game = session('game');
+        $player = $game['player'] == 'X' ? 'O' : 'X';
+
+        $game['result'] = 'Player ' . $player . ' wins!';
+        session(['game' => $game]);
+        return redirect()->back();
+    }
+
+    private function checkWin($player, $board)
     {
         // Check rows
         for ($i = 0; $i < 4; $i++) {
-            if ($this->board[$i][0] == $player && $this->board[$i][1] == $player &&
-                $this->board[$i][2] == $player && $this->board[$i][3] == $player) {
+            if ($board[$i][0] == $player && $board[$i][1] == $player &&
+                $board[$i][2] == $player && $board[$i][3] == $player) {
                 return true;
             }
         }
 
         // Check columns
         for ($j = 0; $j < 4; $j++) {
-            if ($this->board[0][$j] == $player && $this->board[1][$j] == $player &&
-                $this->board[2][$j] == $player && $this->board[3][$j] == $player) {
+            if ($board[0][$j] == $player && $board[1][$j] == $player &&
+                $board[2][$j] == $player && $board[3][$j] == $player) {
                 return true;
             }
         }
 
         // Check diagonals
-        if ($this->board[0][0] == $player && $this->board[1][1] == $player &&
-            $this->board[2][2] == $player && $this->board[3][3] == $player) {
+        if ($board[0][0] == $player && $board[1][1] == $player &&
+            $board[2][2] == $player && $board[3][3] == $player) {
             return true;
         }
 
-        if ($this->board[0][3] == $player && $this->board[1][2] == $player &&
-            $this->board[2][1] == $player && $this->board[3][0] == $player) {
+        if ($board[0][3] == $player && $board[1][2] == $player &&
+            $board[2][1] == $player && $board[3][0] == $player) {
             return true;
         }
 
         return false;
     }
 
-    private function checkTie()
+    private function checkTie($board)
     {
         // Check if there are any empty cells left
         for ($i = 0; $i < 4; $i++) {
-        for ($j = 0; $j < 4; $j++) {
-            if ($this->board[$i][$j] == '-') {
-                return false;
+            for ($j = 0; $j < 4; $j++) {
+                if ($board[$i][$j] == '-') {
+                    return false;
+                }
             }
-        }
         }
 
         return true;
