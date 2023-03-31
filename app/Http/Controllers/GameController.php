@@ -10,7 +10,7 @@ class GameController extends Controller
 {
     public function index()
     {
-        // Render the game view with the current state of the game
+        // Render the game view
         return Inertia::render('Game');
     }
 
@@ -24,7 +24,7 @@ class GameController extends Controller
         );
 
         $game['player'] = 'X';
-        $game['result'] = null;
+        $game['result'] = '';
         $game['error'] = null;
 
         session(['game' => $game]);
