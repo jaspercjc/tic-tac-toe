@@ -17,7 +17,7 @@ class RedirectIfNotPlaying
      */
     public function handle(Request $request, Closure $next)
     {
-        if(!$request->session()->has('started') || !$request->session()->has('game')) {
+        if(!$request->session()->has('game')) {
             return redirect('/');
         }
 

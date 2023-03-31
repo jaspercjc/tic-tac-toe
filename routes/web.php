@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use \App\Http\Controllers\GameController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -17,6 +17,8 @@ Route::middleware([\App\Http\Middleware\RedirectIfPlaying::class])->get('/', fun
     return inertia('Index');
 });
 
-Route::middleware([\App\Http\Middleware\RedirectIfNotPlaying::class])->get('/play', function () {
-    return inertia('Play');
+Route::middleware([\App\Http\Middleware\RedirectIfNotPlaying::class])->group(function () {
+    Route::get('/game', [GameController::class, 'index'])->name('game');
 });
+
+Route::post('/start', [GameController::class, 'start'])->name('start');
