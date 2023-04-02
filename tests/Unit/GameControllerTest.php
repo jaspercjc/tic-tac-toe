@@ -92,7 +92,6 @@ class GameControllerTest extends TestCase
         $this->assertStringContainsString('Player O wins!', session('game')['result']);
     }
 
-
     private function makeMoveRequest($row, $col)
     {
         $request = [

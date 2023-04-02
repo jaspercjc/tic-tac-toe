@@ -70,9 +70,9 @@ class GameController extends Controller
     public function surrender()
     {
         $game = session('game');
-        $player = $game['player'] == 'X' ? 'O' : 'X';
+        $game['player'] = $game['player'] == 'X' ? 'O' : 'X';
 
-        $game['result'] = 'Player ' . $player . ' wins!';
+        $game['result'] = 'Player ' . $game['player'] . ' wins!';
         session(['game' => $game]);
         return redirect()->back();
     }
